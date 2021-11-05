@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+encoding//src/client/ClientConsumer.java=UTF-8
+encoding//src/client/ClientHandler.java=UTF-8
+encoding//src/client/ClientListener.java=UTF-8
+encoding//src/client/ClientRuner.java=UTF-8
+encoding//src/client/ClientView.java=UTF-8
+encoding//src/client/WatchingFolder.java=UTF-8
+encoding//src/model/FileInfor.java=UTF-8
+encoding//src/model/TLVMessage.java=UTF-8
+encoding//src/tcp/ConnectedState.java=UTF-8
+encoding//src/tcp/TCPClientConection.java=UTF-8
