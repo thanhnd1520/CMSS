@@ -23,7 +23,6 @@ public class ConnectedState implements TCPClientConectionState {
 				sendData(tlv);
 				return "connected";
 			} catch (IOException e) {
-				/////////
 				e.printStackTrace();
 				this.tcpClientConnect.changeState(new DisconnectedState(tcpClientConnect));
 				this.tcpClientConnect.setSocket(null);

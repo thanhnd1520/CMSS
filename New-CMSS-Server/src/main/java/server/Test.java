@@ -3,9 +3,6 @@ package server;
 
 import java.nio.ByteBuffer;
 
-import database.JDBCQuery;
-import entity.User;
-
 public class Test {
 	public static void main(String[] argr) {
 		ByteBuffer buffer = ByteBuffer.allocate(0);

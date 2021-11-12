@@ -83,7 +83,7 @@ public class WatchingFolder implements Runnable{
             }
         });
         while (true){
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
     }
 	private boolean check(String fileName) {

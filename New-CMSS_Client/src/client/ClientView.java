@@ -102,7 +102,9 @@ public class ClientView extends JFrame {
 					String username = usernameTextField.getText();
 					String password = passwordTextField.getText();
 					try {
-						clientHandler.sendLogin(username, password);
+						if(!checkLogin) {
+							clientHandler.sendLogin(username, password);
+						}
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -147,12 +149,12 @@ public class ClientView extends JFrame {
 		JButton btnNewButton_1 = new JButton("Synchronize");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(checkLogin) {
-					clientHandler.synchronize();
-				}
-				else {
-					setFailUpdate();
-				}
+//				if(checkLogin) {
+//					clientHandler.synchronize();
+//				}
+//				else {
+//					setFailUpdate();
+//				}
 			}
 			
 		});

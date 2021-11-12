@@ -1,53 +1,37 @@
-package client;
+package server_handler;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import config.Configuration;
 import model.TLVMessage;
-import tcp.TCPClientConection;
+import server.Server;
 
-public class ClientListener implements Runnable{
-	
-	private TCPClientConection conn;
-	private ClientHandler clientHandler;
-	private ClientConsumer consumer;
+public class ServerThreadListener implements Runnable {
+
+	private Server server;
+	private Socket socket;
 	private InputStream input;
-	private final BlockingQueue<TLVMessage> queue = new LinkedBlockingQueue<>();
-	
-	public ClientListener(TCPClientConection conn, ClientHandler clientHandler) {
-		this.conn = conn;
-		this.clientHandler = clientHandler;
-		this.consumer = new ClientConsumer(queue, conn, clientHandler);
-		Thread consumerThread = new Thread(consumer);
-		consumerThread.start();
-	}
+	private String username;
+	private BlockingQueue<TLVMessage> clientQueue;
+	private ServerThreadConsumer clientThreadConsumer;
 
-	public void setConn(TCPClientConection conn) {
-		this.conn = conn;
-		try {
-			this.input = conn.getSocket().getInputStream();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public ServerThreadListener(Server server, Socket socket) {
+		this.server = server;
+		this.socket = socket;
+		clientQueue = new LinkedBlockingQueue<>();
+		clientThreadConsumer = new ServerThreadConsumer(this);
+		Thread clientComsumerThread = new Thread(clientThreadConsumer);
+		clientComsumerThread.start();
 	}
-
-	public void setClientHandler(ClientHandler clientHandler) {
-		this.clientHandler = clientHandler;
-		this.consumer.setClientHandler(clientHandler);
-	}
-
-	@Override
 	public void run() {
 		try {
-			System.out.println("start listenning");
-			input = this.conn.getSocket().getInputStream();
+			System.out.println("client accept");
+			input = this.socket.getInputStream();
 			ByteBuffer byteBuffer = ByteBuffer.allocate(65536);
 			while (true) {
 				if (input.available() <= 0 && byteBuffer.position() < 5) {
@@ -88,7 +72,7 @@ public class ClientListener implements Runnable{
 				TLVMessage tlv = new TLVMessage();
 				tlv.parse(length, dataByte);
 				try {
-					queue.put(tlv);
+					clientQueue.put(tlv);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -100,8 +84,41 @@ public class ClientListener implements Runnable{
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		} finally {
+			server.removeClient(username);
+		}
 	}
 	
-	
+	public Server getServer() {
+		return server;
+	}
+
+	public void setServer(Server server) {
+		this.server = server;
+	}
+
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+		try {
+			this.input = socket.getInputStream();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public BlockingQueue<TLVMessage> getClientQueue() {
+		return clientQueue;
+	}
 }

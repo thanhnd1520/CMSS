@@ -38,14 +38,9 @@ public class ConnectingState implements TCPClientConectionState {
 				return "disconnected";
 			}
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}finally {
-			return "disconnect";
 		}
+		return "disconnect";
 	}
 
 	@Override
@@ -72,7 +67,6 @@ public class ConnectingState implements TCPClientConectionState {
 		this.tcpClientConnect.changeState(new DisconnectedState(tcpClientConnect));
 		return 0;
 	}
-
 
 	@Override
 	public int sendData(TLVMessage tlv) throws IOException {

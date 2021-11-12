@@ -7,16 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.io.FileUtils;
 
 import config.Configuration;
 import model.MessageDefs;
@@ -27,7 +24,6 @@ public class ClientHandler {
 	private static final String clientChangeFile = "clientChange.txt";
 	private static final String clientDateFile = "clientDate.txt";
 	private static final String path = Configuration.getProperties("client.folderDirectory");
-	private Queue<TLVMessage> clientQueue;
 	private ConcurrentHashMap<String, String> logChange; 
 	private ConcurrentHashMap<String, String> logDate;
 	private TCPClientConection conn;
@@ -57,6 +53,7 @@ public class ClientHandler {
 				String fileName = entry.getKey();
 				TLVMessage tlvRequest = new TLVMessage(MessageDefs.MessageTypes.MT_SEND_TEXT_REQ);
 				tlvRequest.addString(MessageDefs.FieldTypes.FT_FILE_NAME, fileName);
+				tlvRequest.addInt(MessageDefs.FieldTypes.FT_RESULT_CODE, MessageDefs.CodeType.CLIENT_UPDATE);
 				try {
 					this.conn.getSocket().getOutputStream().write(tlvRequest.flat());
 				} catch (IOException e) {
@@ -164,8 +161,8 @@ public class ClientHandler {
 				System.out.println("consumer: delete file name: " + fileName);
 				logChange.remove(fileName);
 			}
-		}catch(Throwable e) {
-			e.printStackTrace();
+		}catch(NullPointerException e) {
+			// xóa mà không có gì
 		}
 		writeToFile(changeFile,logChange);
 		getFileInFolder(logDate); 
@@ -237,6 +234,8 @@ public class ClientHandler {
 	        list.put(fileName, time);
 	    }
 	}
+	
+	//  detect file change offline
 	private void compareChange() {
 		ConcurrentHashMap<String, String> currentLogDate = new ConcurrentHashMap<String, String>();
 		getFileInFolder(currentLogDate); // lấy cây thư mục hiên tại
@@ -280,33 +279,17 @@ public class ClientHandler {
 		}catch(Throwable e) {
 			e.printStackTrace();
 		}
-		
-//		System.out.println("log change sau: ");
-//		print(logChange);
 	}
 
-	public void synchronize() {
-		// xoa hết file
+	public Set<String> getListFile() {
+		Set<String> set = new HashSet<String>();
 		File folder = new File(path);
-		this.logChange = new ConcurrentHashMap<String, String>();
-		for (File file : folder.listFiles()) {
-			logChange.put(file.getName(), "s");
+		for ( File fileEntry : folder.listFiles()) {
+			String fileName = fileEntry.getName();
+			set.add(fileName);
 		}
-		try {
-			FileUtils.cleanDirectory(folder);
-			while(folder.listFiles().length > 0) {
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		// yêu cầu tải file
-		TLVMessage tlvRequest =new TLVMessage(MessageDefs.MessageTypes.MT_SYNCHRONIZE_REQ);
-		try {
-			conn.getSocket().getOutputStream().write(tlvRequest.flat());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		return set;
 	}
+
+	
 }	

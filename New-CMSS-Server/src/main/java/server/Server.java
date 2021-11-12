@@ -16,8 +16,7 @@ import config.Configuration;
 import model.MessageDefs;
 import model.QueueMessage;
 import model.TLVMessage;
-import server_handler.ServerHandler;
-import server_handler.ServerThreadConsumer;
+import server_handler.ServerThreadListener;
 
 public class Server {
 	private ServerSocket serverSocket;
@@ -33,8 +32,8 @@ public class Server {
 			clientsOutputStream = new Hashtable<String, Socket>();
 			serverSocket = new ServerSocket(port);
 			consumer = new ServerConsumer(this.queue, this);
-			Thread serverConsumerThread = new Thread(consumer);
-			serverConsumerThread.start();
+			Thread serverListenerThread = new Thread(consumer);
+			serverListenerThread.start();
 			System.out.println(serverSocket.getLocalPort());
 			log.info("SERVER START");
 		} catch (IOException e) {
@@ -47,7 +46,7 @@ public class Server {
 		while(true){
 			try {
 				socket = serverSocket.accept();
-				ServerHandler client =  new ServerHandler(this, socket);
+				ServerThreadListener client =  new ServerThreadListener(this, socket);
 				System.out.println(1);
 				Thread clientThread = new Thread(client);
 				clientThread.start();
